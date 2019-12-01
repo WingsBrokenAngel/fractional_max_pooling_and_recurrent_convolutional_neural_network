@@ -102,3 +102,11 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# 
+logs/
+model/
+*idx3-ubyte
+*idx1-ubyte
+data_batch_*
+test_batch
