@@ -51,9 +51,9 @@ def bulid_model():
     variables['global_step'] = global_step
     optimizer = tf.train.AdamOptimizer(learning_rate)
     trainable_variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
-    grads, variables = zip(*optimizer.compute_gradients(loss, trainable_variables))
+    grads, vs = zip(*optimizer.compute_gradients(loss, trainable_variables))
     grads, global_norm = tf.clip_by_global_norm(grads, 10)
-    train_step = optimizer.apply_gradients(zip(grads, variables), global_step)
+    train_step = optimizer.apply_gradients(zip(grads, vs), global_step)
     variables['train_step'] = train_step
     variables['global_step'] = global_step
     saver = tf.train.Saver()    
