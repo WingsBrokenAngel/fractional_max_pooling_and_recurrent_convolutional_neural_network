@@ -24,7 +24,7 @@ def single_conv_layer(input_tensor, num_filters, pool_flag, name):
     with tf.variable_scope(name):
         conv = layers.Conv2D(num_filters, 2, activation=tf.nn.relu)
         x = conv(input_tensor)
-        if bool_flag:
+        if pool_flag:
             x, row_sq, col_sq = tf.nn.fractional_max_pool(
                     x, RATIO, PSEUDO_RANDOM, OVERLAPPING)
         print(x.name, x.get_shape())
@@ -41,6 +41,6 @@ def inference(input_tensor):
     x = single_conv_layer(x, 32*6, False, 'conv7')
     conv = layers.Conv2D(10, 1)
     x = conv(x) 
-
+    x = tf.squeeze(x)
     return x
 

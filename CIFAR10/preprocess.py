@@ -49,7 +49,7 @@ def load_test_data():
 class get_data():
     def __init__(self, flag, image_size):
         self.flag = flag
-        self.image_size
+        self.image_size = image_size
         if flag == "train":
             self.images, self.labels = load_train_data()
             self.images, self.labels = self.images[:-5000], self.labels[:-5000]

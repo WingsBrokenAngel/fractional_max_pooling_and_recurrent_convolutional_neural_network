@@ -11,11 +11,10 @@ from datetime import datetime
 import os
 import preprocess as pps
 
-
-IMAGE_SIZE = 36
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+IMAGE_SIZE = 38
 BATCH_SIZE = 128
 LEARNING_RATE_BASE = 0.001
-REGULARIZATION_RATE = 0.0001
 TRAINING_STEPS = 100000
 EPOCH = 128
 
@@ -53,17 +52,17 @@ def bulid_model():
             os.path.join(LOG_DIR,'train'), tf.get_default_graph())
     variables['writer'] = writer
     learning_rate = tf.Variable(LEARNING_RATE_BASE, trainable=False)
-
     global_step = tf.Variable(0, trainable=False)
     variables['global_step'] = global_step
     train_step = tf.train.AdamOptimizer(learning_rate)
     train_step = train_step.minimize(loss, global_step=global_step)
+    variables['train_step'] = train_step
     variables['global_step'] = global_step
     saver = tf.train.Saver()    
     variables['saver'] = saver
     return variables
 
-def train(train_data, sess, variables)
+def train(train_data, sess, variables):
     train_step = variables['train_step']
     loss = variables['loss']
     global_step = variables['global_step']
@@ -87,12 +86,12 @@ def train(train_data, sess, variables)
     loss_ave /= cnt
     cnt = 0
     print('\n', datetime.now())
-    print("After %d training step(s), loss on training batch is %.2f, accuracy is %.2f\n"%(
+    print("After %d training step(s), loss on training batch is %.4f, accuracy is %.4f"%(
         step, loss_ave, acc_ave))
-    train_writer.add_summary(summary, step)
+    writer.add_summary(summary, step)
 
 
-def develop(dev_data, sess, variables)
+def develop(dev_data, sess, variables):
     loss = variables['loss']
     accuracy = variables['accuracy']
     x = variables['x']
@@ -111,11 +110,11 @@ def develop(dev_data, sess, variables)
     acc_ave /= cnt
     loss_ave /= cnt
     print('\n', datetime.now())
-    print("Loss on develop set is %.2f, accuracy is %.2f\n"%(loss_ave, acc_ave))
+    print("Loss on develop set is %.4f, accuracy is %.4f"%(loss_ave, acc_ave))
     return acc_ave
 
 
-def test(test_data, sess, variables)
+def test(test_data, sess, variables):
     loss = variables['loss']
     accuracy = variables['accuracy']
     x = variables['x']
@@ -134,14 +133,16 @@ def test(test_data, sess, variables)
     acc_ave /= cnt
     loss_ave /= cnt
     print('\n', datetime.now())
-    print("Loss on test set is %.2f, accuracy is %.2f\n"%(loss_ave, acc_ave))
+    print("Loss on test set is %.4f, accuracy is %.4f"%(loss_ave, acc_ave))
 
 
 def train_dev_test(train_data, dev_data, test_data, variables):
     best_acc = 0.
     saver = variables['saver']
     writer = variables['writer']
-    with tf.Session() as sess:
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    with tf.Session(config=config) as sess:
         init_op = tf.global_variables_initializer()
         sess.run(init_op)
         for i in range(EPOCH):
