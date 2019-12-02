@@ -9,10 +9,10 @@ Date: 2018-05-02
 import tensorflow as tf
 import tensorflow.keras.layers as layers
 
-NUM_FILTERS = 64
+NUM_FILTERS = 160
 CONV_SIZE = 2
 NUM_CHANNELS = 3
-NUM_OUTPUT = 100
+NUM_OUTPUT = 10
 RATIO = [1.0, 2**(1/3), 2**(1/3), 1.0]
 PSEUDO_RANDOM = True
 OVERLAPPING = True

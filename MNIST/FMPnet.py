@@ -38,7 +38,7 @@ def inference(input_tensor):
     x = single_conv_layer(x, 32*5, True, 'conv5')
     x = single_conv_layer(x, 32*6, True, 'conv6')
     x = single_conv_layer(x, 32*6, False, 'conv7')
-    conv = layers.Conv2D(10, 1)
+    conv = layers.Conv2D(NUM_OUTPUT, 1)
     x = conv(x) 
     x = tf.squeeze(x)
     return x
