@@ -14,7 +14,7 @@ import preprocess as pps
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 IMAGE_SIZE = 120
 BATCH_SIZE = 128
-LEARNING_RATE_BASE = 0.001
+LEARNING_RATE_BASE = 0.0001
 TRAINING_STEPS = 100000
 EPOCH = 128
 
@@ -30,7 +30,7 @@ def bulid_model():
     gt = tf.placeholder(tf.int64, [None], name='y-input')
     variables['gt'] = gt
     logits = fmp.inference(x)
-    loss = tf.losses.sparse_softmax_cross_entropy(gt, logits)
+    loss = tf.losses.sparse_softmax_cross_entropy(gt, logits + 1e-8)
     variables['loss'] = loss
     tf.summary.scalar('loss', loss)
     prediction = tf.argmax(logits, 1)
@@ -48,8 +48,11 @@ def bulid_model():
     learning_rate = tf.Variable(LEARNING_RATE_BASE, trainable=False)
     global_step = tf.Variable(0, trainable=False)
     variables['global_step'] = global_step
-    train_step = tf.train.AdamOptimizer(learning_rate)
-    train_step = train_step.minimize(loss, global_step=global_step)
+    optimizer = tf.train.AdamOptimizer(learning_rate)
+    trainable_variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
+    grads, variables = zip(*optimizer.compute_gradients(loss, trainable_variables))
+    grads, global_norm = tf.clip_by_global_norm(grads, 10)
+    train_step = optimizer.apply_gradients(zip(grads, variables), global_step)
     variables['train_step'] = train_step
     variables['global_step'] = global_step
     saver = tf.train.Saver()    
