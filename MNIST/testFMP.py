@@ -9,7 +9,6 @@ import os
 import numpy as np
 import time
 from collections import Counter
-os.environ['CUDA_VISIBLE_DEVICES'] = '3'
 
 def bulid_model():
     variables = {}
@@ -67,14 +66,17 @@ def test(test_data, variables, sess):
     print("Accuracy is %.4f"%(acc_ave))
 
 
-def main(argv=None):
+def main(argv):
+    assert len(argv) == 3, "python testFMP.py ./PATH/TO/MODEL GPU_DEVICE_NUM"
+
     test_data = pps.get_data('test', tdtfmp.IMAGE_SIZE)
     variables = bulid_model()
     saver = variables['saver']
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
+    os.environ['CUDA_VISIBLE_DEVICES'] = argv[2]
     with tf.Session(config=config) as sess:
-        saver.restore(sess, os.path.join(tdtfmp.MODEL_SAVE_PATH, tdtfmp.MODEL_NAME))
+        saver.restore(sess, argv[1])
         test(test_data, variables, sess)
 
 if __name__ == "__main__":

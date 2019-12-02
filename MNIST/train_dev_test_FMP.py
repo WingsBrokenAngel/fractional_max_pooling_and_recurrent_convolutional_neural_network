@@ -11,13 +11,11 @@ from datetime import datetime
 import os
 import preprocess as pps
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 IMAGE_SIZE = 38
 BATCH_SIZE = 128
 LEARNING_RATE_BASE = 0.001
-TRAINING_STEPS = 100000
 EPOCH = 128
-
+WEIGHT_DECAY_RATE = 1.
 MODEL_SAVE_PATH = os.path.join('.', 'model')
 MODEL_NAME = 'model.ckpt'
 LOG_DIR = os.path.join('.', 'logs')
@@ -51,8 +49,8 @@ def bulid_model():
     writer = tf.summary.FileWriter(
             os.path.join(LOG_DIR,'train'), tf.get_default_graph())
     variables['writer'] = writer
-    learning_rate = tf.Variable(LEARNING_RATE_BASE, trainable=False)
-    global_step = tf.Variable(0, trainable=False)
+    global_step = tf.train.get_or_create_global_step()
+    learning_rate = tf.train.exponential_decay(LEARNING_RATE_BASE, global_step, 1000, WEIGHT_DECAY_RATE)
     variables['global_step'] = global_step
     train_step = tf.train.AdamOptimizer(learning_rate)
     train_step = train_step.minimize(loss, global_step=global_step)
@@ -161,6 +159,11 @@ def train_dev_test(train_data, dev_data, test_data, variables):
 
 
 def main(argv=None):
+    assert len(argv) == 4, "python train_dev_test_FMP.py WEIGHT_DECAY_RATE GPU_DEVICE_NUM MODEL_NAME"
+    global WEIGHT_DECAY_RATE, MODEL_NAME
+    WEIGHT_DECAY_RATE = float(argv[1])
+    os.environ['CUDA_VISIBLE_DEVICES'] = argv[2]
+    MODEL_NAME = argv[3]
     train_data = pps.get_data('train', IMAGE_SIZE)
     dev_data = pps.get_data('dev', IMAGE_SIZE)
     test_data = pps.get_data('test', IMAGE_SIZE)
