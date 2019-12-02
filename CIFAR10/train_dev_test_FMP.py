@@ -86,7 +86,7 @@ def train(train_data, sess, variables):
     cnt = 0
     print('\n', datetime.now())
     print("After %d training step(s), loss on training batch is %.4f, accuracy is %.4f"%(
-        step, loss_ave, acc_ave))
+        step, loss_ave, acc_ave), flush=True)
     writer.add_summary(summary, step)
 
 

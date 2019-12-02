@@ -9,7 +9,7 @@ import os
 import numpy as np
 import time
 from collections import Counter
-
+os.environ['CUDA_VISIBLE_DEVICES'] = '3'
 
 def bulid_model():
     variables = {}
@@ -36,22 +36,13 @@ def bulid_model():
     tf.summary.scalar('accuracy', accuracy)
     merged = tf.summary.merge_all()
     variables['merged'] = merged
-    writer = tf.summary.FileWriter(
-            os.path.join(LOG_DIR,'train'), tf.get_default_graph())
-    variables['writer'] = writer
-    learning_rate = tf.Variable(LEARNING_RATE_BASE, trainable=False)
-    global_step = tf.Variable(0, trainable=False)
-    variables['global_step'] = global_step
-    train_step = tf.train.AdamOptimizer(learning_rate)
-    train_step = train_step.minimize(loss, global_step=global_step)
-    variables['train_step'] = train_step
-    variables['global_step'] = global_step
+
     saver = tf.train.Saver()    
     variables['saver'] = saver
     return variables
 
 
-def test(test_data, sess, variables):
+def test(test_data, variables, sess):
     prediction = variables['prediction']
     x = variables['x']
     gt = variables['gt']
@@ -60,15 +51,16 @@ def test(test_data, sess, variables):
     for i in range(12):
         results[i] = []
         while test_data.start_index != test_data.length:
-            ret_images, ret_labels = test_data.get_next_batch(BATCH_SIZE, False)
+            ret_images, ret_labels = test_data.get_next_batch(tdtfmp.BATCH_SIZE, False)
             pred = sess.run(prediction, feed_dict={x:ret_images, gt:ret_labels})
             results[i].append(pred)
+        test_data.start_index = 0
         results[i] = np.concatenate(results[i], axis=0)
     results = np.stack([results[key] for key in results], axis=1)
     print('All result shape:', results.shape, 'dtype:', results.dtype)
     vote_results = []
     for arr in results:
-        vote_results.append(max(Counter(arr)))
+        vote_results.append(Counter(arr).most_common(1)[0][0])
     labels = test_data.labels
     acc_ave = (vote_results == labels).mean()
     print('\n', datetime.now())

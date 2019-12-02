@@ -7,7 +7,7 @@ Date: 2018-04-18
 import numpy as np
 import os
 from PIL import Image
-import tensorflow.keras.datasets.cifar100 as cifar10
+import tensorflow.keras.datasets.cifar10 as cifar10
 
 
 data = cifar10.load_data()
