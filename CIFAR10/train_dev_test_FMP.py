@@ -13,7 +13,7 @@ import preprocess as pps
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 IMAGE_SIZE = 120
-BATCH_SIZE = 128
+BATCH_SIZE = 32
 LEARNING_RATE_BASE = 0.001
 EPOCH = 128
 
@@ -103,7 +103,7 @@ def develop(dev_data, sess, variables):
     acc_ave /= cnt
     loss_ave /= cnt
     print('\n', datetime.now())
-    print("Loss on develop set is %.4f, accuracy is %.4f"%(loss_ave, acc_ave))
+    print("Loss on develop set is %.4f, accuracy is %.4f"%(loss_ave, acc_ave), flush=True)
     return acc_ave
 
 

@@ -104,7 +104,7 @@ def develop(dev_data, sess, variables):
     acc_ave /= cnt
     loss_ave /= cnt
     print('\n', datetime.now())
-    print("Loss on develop set is %.4f, accuracy is %.4f"%(loss_ave, acc_ave))
+    print("Loss on develop set is %.4f, accuracy is %.4f"%(loss_ave, acc_ave), flush=True)
     return acc_ave
 
 
