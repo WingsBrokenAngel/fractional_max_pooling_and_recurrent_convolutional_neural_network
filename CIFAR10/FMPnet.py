@@ -30,7 +30,7 @@ def single_conv_layer(input_tensor, num_filters, pool_flag, name):
     return x
 
 
-def inference(input_tensor):
+def inference(input_tensor, keep_rate):
     x = single_conv_layer(input_tensor, NUM_FILTERS, True, 'conv1')
     x = single_conv_layer(x, NUM_FILTERS*2, True, 'conv2')
     x = single_conv_layer(x, NUM_FILTERS*3, True, 'conv3')
@@ -43,6 +43,7 @@ def inference(input_tensor):
     x = single_conv_layer(x, NUM_FILTERS*10, True, 'conv10')
     x = single_conv_layer(x, NUM_FILTERS*11, True, 'conv11')
     x = single_conv_layer(x, NUM_FILTERS*12, True, 'conv12')
+    x = tf.nn.dropout(x, keep_rate)
     x = single_conv_layer(x, NUM_FILTERS*6, False, 'conv13')
     conv = layers.Conv2D(NUM_OUTPUT, 1)
     x = conv(x) 

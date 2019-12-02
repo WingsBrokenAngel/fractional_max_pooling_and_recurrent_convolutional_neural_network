@@ -16,7 +16,7 @@ IMAGE_SIZE = 120
 BATCH_SIZE = 32
 LEARNING_RATE_BASE = 0.001
 EPOCH = 128
-
+KEEP_RATE = 0.5
 MODEL_SAVE_PATH = os.path.join('.', 'model')
 MODEL_NAME = 'model.ckpt'
 LOG_DIR = os.path.join('.', 'logs')
@@ -28,7 +28,9 @@ def bulid_model():
     variables['x'] = x
     gt = tf.placeholder(tf.int64, [None], name='y-input')
     variables['gt'] = gt
-    logits = fmp.inference(x)
+    keep_rate = tf.placeholder(tf.float32, [], name='keep_rate')
+    variables['keep_rate'] = keep_rate
+    logits = fmp.inference(x, keep_rate)
     loss = tf.losses.sparse_softmax_cross_entropy(gt, logits)
     variables['loss'] = loss
     tf.summary.scalar('loss', loss)
@@ -64,14 +66,15 @@ def train(train_data, sess, variables):
     x = variables['x']
     gt = variables['gt']
     writer = variables['writer']
+    keep_rate = variables['keep_rate']
     acc_ave = 0
     loss_ave = 0.
     cnt = 0
     while train_data.start_index != train_data.length:
-        ret_images, ret_labels = train_data.get_next_batch(BATCH_SIZE, False)
+        ret_images, ret_labels = train_data.get_next_batch(BATCH_SIZE, True)
         _, loss_value, step, acc, summary = sess.run(
                 [train_step, loss, global_step, accuracy, merged],
-                feed_dict={x:ret_images, gt:ret_labels})
+                feed_dict={x:ret_images, gt:ret_labels, keep_rate:KEEP_RATE})
         acc_ave += acc * ret_labels.shape[0]
         loss_ave += loss_value * ret_labels.shape[0]
         cnt += ret_images.shape[0]
@@ -89,6 +92,7 @@ def develop(dev_data, sess, variables):
     accuracy = variables['accuracy']
     x = variables['x']
     gt = variables['gt']
+    keep_rate = variables['keep_rate']
     acc_ave = 0
     loss_ave = 0.
     cnt = 0
@@ -96,7 +100,7 @@ def develop(dev_data, sess, variables):
         ret_images, ret_labels = dev_data.get_next_batch(BATCH_SIZE, False)
         loss_value, acc = sess.run(
                 [loss, accuracy],
-                feed_dict={x:ret_images, gt:ret_labels})
+                feed_dict={x:ret_images, gt:ret_labels, keep_rate:1.0})
         acc_ave += acc * ret_labels.shape[0]
         loss_ave += loss_value * ret_labels.shape[0]
         cnt += ret_images.shape[0]
@@ -112,6 +116,7 @@ def test(test_data, sess, variables):
     accuracy = variables['accuracy']
     x = variables['x']
     gt = variables['gt']
+    keep_rate = variables['keep_rate']
     acc_ave = 0
     loss_ave = 0.
     cnt = 0
@@ -119,7 +124,7 @@ def test(test_data, sess, variables):
         ret_images, ret_labels = test_data.get_next_batch(BATCH_SIZE, False)
         loss_value, acc = sess.run(
                 [loss, accuracy],
-                feed_dict={x:ret_images, gt:ret_labels})
+                feed_dict={x:ret_images, gt:ret_labels, keep_rate:1.0})
         acc_ave += acc * ret_labels.shape[0]
         loss_ave += loss_value * ret_labels.shape[0]
         cnt += ret_images.shape[0]
