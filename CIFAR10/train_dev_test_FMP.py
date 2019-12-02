@@ -74,7 +74,7 @@ def train(train_data, sess, variables):
     loss_ave = 0.
     cnt = 0
     while train_data.start_index != train_data.length:
-        ret_images, ret_labels = train_data.get_next_batch(BATCH_SIZE, True)
+        ret_images, ret_labels = train_data.get_next_batch(BATCH_SIZE, False)
         _, loss_value, step, acc, summary = sess.run(
                 [train_step, loss, global_step, accuracy, merged],
                 feed_dict={x:ret_images, gt:ret_labels, keep_rate:KEEP_RATE})

@@ -1,8 +1,8 @@
 # -*- coding:utf-8 -*-
 
 import tensorflow as tf
-import trainFMP as tfmp
-import FMPnet as nfmp
+import FMPnet as fmp
+import train_dev_test_FMP as tdtfmp
 import preprocess as pps
 from datetime import datetime
 import os
@@ -10,69 +10,72 @@ import numpy as np
 import time
 
 
-def dev_and_test(data, kind):
-    x = tf.placeholder(tf.float32, [None, tfmp.IMAGE_SIZE, tfmp.IMAGE_SIZE, 3], name='dev-x-input')
-    y_ = tf.placeholder(tf.float32, [None, nfmp.NUM_OUTPUT], name='dev-y-input')
-    c = {}
-    c['train'] = tf.Variable(False, trainable=False)
-    c['regularizer'] = None
-    y, parameters = nfmp.inference(x, c)
-    arg_y = tf.argmax(y, 1)
-    arg_y_ = tf.argmax(y_, 1)
-
-    accuracy = tf.equal(arg_y, arg_y_)
+def bulid_model():
+    variables = {}
+    x = tf.placeholder(
+            tf.float32, 
+            [None,tdtfmp.IMAGE_SIZE,tdtfmp.IMAGE_SIZE,fmp.NUM_CHANNELS], 
+            name='x-input')
+    variables['x'] = x
+    gt = tf.placeholder(
+            tf.int64,
+            [None],
+            name='y-input')
+    variables['gt'] = gt
+    logits = fmp.inference(x)
+    loss = tf.losses.sparse_softmax_cross_entropy(gt, logits + 1e-8)
+    variables['loss'] = loss
+    tf.summary.scalar('loss', loss)
+    prediction = tf.argmax(logits, 1)
+    variables['prediction'] = prediction
+    accuracy = tf.equal(prediction, gt)
     accuracy = tf.cast(accuracy, tf.float32)
     accuracy = tf.reduce_mean(accuracy)
-
+    variables['accuracy'] = accuracy
     tf.summary.scalar('accuracy', accuracy)
-
     merged = tf.summary.merge_all()
-
+    variables['merged'] = merged
     writer = tf.summary.FileWriter(
-            os.path.join(tfmp.LOG_DIR, kind), tf.get_default_graph())
-    
-    variable_averages = tf.train.ExponentialMovingAverage(
-            tfmp.MOVING_AVERAGE_DECAY)
-    variables_to_restore = variable_averages.variables_to_restore()
-    saver = tf.train.Saver(variables_to_restore)
+            os.path.join(LOG_DIR,'train'), tf.get_default_graph())
+    variables['writer'] = writer
+    learning_rate = tf.Variable(LEARNING_RATE_BASE, trainable=False)
+    global_step = tf.Variable(0, trainable=False)
+    variables['global_step'] = global_step
+    train_step = tf.train.AdamOptimizer(learning_rate)
+    train_step = train_step.minimize(loss, global_step=global_step)
+    variables['train_step'] = train_step
+    variables['global_step'] = global_step
+    saver = tf.train.Saver()    
+    variables['saver'] = saver
+    return variables
 
-    flag = True
 
-    with tf.Session() as sess:
-        ckpt = tf.train.get_checkpoint_state(tfmp.MODEL_SAVE_PATH)
-        if ckpt and ckpt.model_checkpoint_path:
-            saver.restore(sess, ckpt.model_checkpoint_path)
-            global_step = ckpt.model_checkpoint_path.split('/')[-1].split('-')[-1]
-            acc_score = 0
-            iter_cnt = int(data.length // tfmp.BATCH_SIZE)
-
-            for i in range(iter_cnt):
-                feed_x, feed_x_norm, feed_y = data.get_next_batch(tfmp.BATCH_SIZE, False)
-                tmp = np.zeros((tfmp.BATCH_SIZE, tfmp.IMAGE_SIZE, tfmp.IMAGE_SIZE, 3))
-                tmp[:,31:63,31:63,:] = feed_x_norm
-                feed_x_norm = tmp
-                feed = {x:feed_x_norm, y_:feed_y}
-                acc_tmp, ay, ay_, rec = sess.run(
-                        [accuracy, arg_y, arg_y_, merged],
-                        feed_dict=feed)
-                acc_score += acc_tmp
-                writer.add_summary(rec, int(global_step))
-
-            acc_score /= iter_cnt
-            print('\n', datetime.now(), 'After %s training step(s), %s acc=%g'%(global_step, kind, acc_score))
-            if int(global_step) == tfmp.TRAINING_STEPS:
-                flag = False
-        else:
-            print('No Checkpoint Found')
-    writer.close()
-        
+def test(test_data, sess, variables):
+    prediction = variables['prediction']
+    x = variables['x']
+    gt = variables['gt']
+    acc_ave = 0
+    results = {}
+    for i in range(12):
+        results[i] = []
+        while test_data.start_index != test_data.length:
+            ret_images, ret_labels = test_data.get_next_batch(BATCH_SIZE, False)
+            pred = sess.run(prediction, feed_dict={x:ret_images, gt:ret_labels})
+            results[i].append(pred)
+        results[i] = np.concatenate(results[i], axis=0)
+    print('\n', datetime.now())
+    print("Loss on test set is %.4f, accuracy is %.4f"%(loss_ave, acc_ave))
 
 
 def main(argv=None):
-    kind = input('Do you want to develop or test?(dev, test)')
-    assert kind in ['test', 'dev']
-    data = pps.get_data(kind)
-    dev_and_test(data, kind)
+    test_data = pps.get_data('test', tdtfmp.IMAGE_SIZE)
+    variables = bulid_model()
+    saver = variables['saver']
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    with tf.Session(config=config) as sess:
+        saver.restore(sess, os.path.join(tdtfmp.MODEL_SAVE_PATH, tdtfmp.MODEL_NAME))
+        test(test_data, variables, sess)
 
 if __name__ == "__main__":
     tf.app.run()
