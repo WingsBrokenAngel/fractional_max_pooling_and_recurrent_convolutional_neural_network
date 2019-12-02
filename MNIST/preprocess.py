@@ -60,7 +60,7 @@ class get_data():
         size = end - self.start_index
 
         ret_images = self.images[self.indices[self.start_index:end]]
-        ret_labels = self.labels[self.indcies[self.start_index:end]]
+        ret_labels = self.labels[self.indices[self.start_index:end]]
         if if_arg:
             for i in range(size):
                 if_need_to_flip = np.random.choice([True, False])
