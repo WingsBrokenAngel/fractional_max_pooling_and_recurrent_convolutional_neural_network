@@ -8,6 +8,7 @@ from datetime import datetime
 import os
 import numpy as np
 import time
+from collections import Counter
 
 
 def bulid_model():
@@ -63,8 +64,15 @@ def test(test_data, sess, variables):
             pred = sess.run(prediction, feed_dict={x:ret_images, gt:ret_labels})
             results[i].append(pred)
         results[i] = np.concatenate(results[i], axis=0)
+    results = np.stack([results[key] for key in results], axis=1)
+    print('All result shape:', results.shape, 'dtype:', results.dtype)
+    vote_results = []
+    for arr in results:
+        vote_results.append(max(Counter(arr)))
+    labels = test_data.labels
+    acc_ave = (vote_results == labels).mean()
     print('\n', datetime.now())
-    print("Loss on test set is %.4f, accuracy is %.4f"%(loss_ave, acc_ave))
+    print("Accuracy is %.4f"%(acc_ave))
 
 
 def main(argv=None):
