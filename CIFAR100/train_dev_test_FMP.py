@@ -12,7 +12,7 @@ import os
 import preprocess as pps
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
-IMAGE_SIZE = 38
+IMAGE_SIZE = 120
 BATCH_SIZE = 128
 LEARNING_RATE_BASE = 0.001
 TRAINING_STEPS = 100000

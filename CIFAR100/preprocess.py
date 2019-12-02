@@ -13,9 +13,13 @@ import tensorflow.keras.datasets.cifar100 as cifar100
 data = cifar100.load_data()
 train_dev_data, test_data = data[0], data[1]
 train_dev_samples, train_dev_labels = train_dev_data
+train_dev_labels = np.squeeze(train_dev_labels)
 print('CIFAR100 train dev samples:', train_dev_samples.shape)
+print('CIFAR100 train dev labels:', train_dev_labels.shape)
 test_samples, test_labels = test_data
+test_labels = np.squeeze(test_labels)
 print('CIFAR100 test samples:', test_samples.shape)
+print('CIFAR100 test labels:', test_labels.shape)
 
 class get_data():
     def __init__(self, flag, image_size):
@@ -41,7 +45,6 @@ class get_data():
             img_resize = Image.fromarray(img).resize((image_size, image_size))
             tmp.append(img_resize)
         tmp = np.stack(tmp, axis=0)
-        tmp = np.expand_dims(tmp, axis=-1)
         print('Resized images:', tmp.shape)
         self.images = tmp
         self.images = self.images.astype(np.float32)
