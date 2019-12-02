@@ -13,10 +13,8 @@ import tensorflow.keras.datasets.mnist as mnist
 data = mnist.load_data()
 train_dev_data, test_data = data[0], data[1]
 train_dev_samples, train_dev_labels = train_dev_data
-train_dev_samples = np.expand_dims(train_dev_samples, axis=-1)
 print('MNIST train dev samples:', train_dev_samples.shape)
 test_samples, test_labels = test_data
-test_samples = np.expand_dims(test_samples, axis=-1)
 print('MNIST test samples:', test_samples.shape)
 
 class get_data():
@@ -44,6 +42,7 @@ class get_data():
             img_resize = Image.fromarray(img).resize((image_size, image_size))
             tmp.append(img_resize)
         tmp = np.stack(tmp, axis=0)
+        tmp = np.expand_dims(tmp, axis=-1)
         print('Resized images:', tmp.shape)
         self.images = tmp
         self.images = self.images.astype(np.float32)
