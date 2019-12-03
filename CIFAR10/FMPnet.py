@@ -8,14 +8,16 @@ Date: 2018-05-02
 
 import tensorflow as tf
 import tensorflow.keras.layers as layers
+from config import Config
 
+cfg = Config()
 NUM_FILTERS = 160
 CONV_SIZE = 2
 NUM_CHANNELS = 3
 NUM_OUTPUT = 10
 RATIO = [1.0, 2**(1/3), 2**(1/3), 1.0]
-PSEUDO_RANDOM = True
-OVERLAPPING = True
+PSEUDO_RANDOM = cfg.pseudo_random
+OVERLAPPING = cfg.overlapping
 
 
 def single_conv_layer(input_tensor, num_filters, pool_flag, name):
