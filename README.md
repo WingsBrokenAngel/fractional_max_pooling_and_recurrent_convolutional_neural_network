@@ -8,8 +8,12 @@ This repository is implemented based on [Fractional Max-Pooling](https://arxiv.o
 
 ## Model Description
 ![The effect of fractional max-pooling](./imgs/fractional_max_pooling.png)
-## MNIST
-The input images are resized to (38, 38) which is slightly different with the size in that paper. The model is trained without dropout and data argumentation. The overall structure of the model can be expressed as follows: `(32nC2 - FMP \sqrt{2})_6-C2-C1-output`.
+### MNIST
+The input images are resized to (38, 38) which is slightly different with the size in that paper. The model is trained without dropout and data argumentation. The overall structure of the model can be expressed as follows: 
+```
+(32nC2 - FMP 2^{1/2})_6 - C2 - C1 - output.
+```
+Here is the comparison table on error rates.  
 
 | The number of repeated tests 	| pseudorandom overlapping 	| random overlapping 	|
 |---------------------------	|----------------------		|	--------------		|
@@ -18,11 +22,13 @@ The input images are resized to (38, 38) which is slightly different with the si
 | 1 test (paper)				|	0.44%					|	0.50%				|
 | 12 test (paper)				|   0.34%					|	0.32%				|
 
-### Usage
+#### Usage
 - train: `python train_dev_test_FMP.py WEIGHT_DECAY_RATE GPU_DEVICE_NUM MODEL_NAME`
+	- e.g. `python train_dev_test_FMP.py 0.8871 model.ckpt`
 - test: `python testFMP.py ./PATH/TO/MODEL GPU_DEVICE_NUM`
+	- e.g. `python testFMP.py ./model/model.ckpt 0`
 
-### Model Checkpoint
+#### Model Checkpoint
 - pseudorandom overlapping
 	- [meta](https://cloud.tsinghua.edu.cn/f/4773c8f9ca694b9dbdc4/?dl=1) 
 	SHA256: e1593968648bb6665e2cede56b793945ef6369e89e8fe24bf1ab8bafb8d73c07
@@ -37,3 +43,17 @@ The input images are resized to (38, 38) which is slightly different with the si
 	SHA256: 83bea54b67784e89064b7fb003e512a7ed9544b332ab2ce843c46651b01ad3cd
 	- [data](https://cloud.tsinghua.edu.cn/f/a9724b756c164574aab3/?dl=1) 
 	SHA256: 7677d1138e39191c6c7da8029e611b23f775e966ac4b07a6a582cbb10b5f5c17
+
+
+### CIFAR100
+#### Variant 1
+The overall structure of the model can be represented as follows:
+```
+(128nC2 - FMP 2^{1/3})_6 - C2 - C1 - output
+```
+The input images are resized to (46, 46). The model is trained without dropout and data argumentation.
+
+| The number of repeated tests 	| pseudorandom overlapping 	| 
+|---------------------------	|----------------------		|
+| 1 test (mine)				   	|   48.08%                	|	
+| 12 test (mine)                |   0.34%                  	|	

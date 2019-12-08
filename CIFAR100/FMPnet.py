@@ -9,7 +9,7 @@ Date: 2018-05-02
 import tensorflow as tf
 import tensorflow.keras.layers as layers
 
-NUM_FILTERS = 64
+NUM_FILTERS = 128
 CONV_SIZE = 2
 NUM_CHANNELS = 3
 NUM_OUTPUT = 100
@@ -39,11 +39,7 @@ def inference(input_tensor):
     x = single_conv_layer(x, NUM_FILTERS*6, True, 'conv6')
     x = single_conv_layer(x, NUM_FILTERS*7, True, 'conv7')
     x = single_conv_layer(x, NUM_FILTERS*8, True, 'conv8')
-    x = single_conv_layer(x, NUM_FILTERS*9, True, 'conv9')
-    x = single_conv_layer(x, NUM_FILTERS*10, True, 'conv10')
-    x = single_conv_layer(x, NUM_FILTERS*11, True, 'conv11')
-    x = single_conv_layer(x, NUM_FILTERS*12, True, 'conv12')
-    x = single_conv_layer(x, NUM_FILTERS*6, False, 'conv13')
+    x = single_conv_layer(x, NUM_FILTERS*4, False, 'conv9')
     conv = layers.Conv2D(NUM_OUTPUT, 1)
     x = conv(x) 
     x = tf.squeeze(x)
