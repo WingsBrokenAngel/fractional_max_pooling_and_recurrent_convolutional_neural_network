@@ -12,7 +12,7 @@ import os
 import preprocess as pps
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '1'
-IMAGE_SIZE = 46
+IMAGE_SIZE = 35
 BATCH_SIZE = 128
 LEARNING_RATE_BASE = 0.0001
 EPOCH = 128
@@ -75,7 +75,7 @@ def train(train_data, sess, variables):
     loss_ave = 0.
     cnt = 0
     while train_data.start_index != train_data.length:
-        ret_images, ret_labels = train_data.get_next_batch(BATCH_SIZE, False)
+        ret_images, ret_labels = train_data.get_next_batch(BATCH_SIZE, True)
         _, loss_value, step, acc, summary = sess.run(
                 [train_step, loss, global_step, accuracy, merged],
                 feed_dict={x:ret_images, gt:ret_labels, keep_rate:KEEP_RATE})

@@ -46,14 +46,14 @@ Here is the comparison table on error rates.
 
 
 ### CIFAR100
-#### Variant 1
 The overall structure of the model can be represented as follows:
 ```
 (128nC2 - FMP 2^{1/3})_6 - C2 - C1 - output
 ```
-The input images are resized to (46, 46). The model is trained without dropout and data argumentation.
+The number of layers is reduced since it is too time consuming to train the network described in the paper and its performance is not very good on the train set and validation set. The input images are resized to (46, 46). The model is trained without dropout and data argumentation.
 
 | The number of repeated tests 	| pseudorandom overlapping 	| 
 |---------------------------	|----------------------		|
 | 1 test (mine)				   	|   48.08%                	|	
 | 12 test (mine)                |   0.34%                  	|	
+
