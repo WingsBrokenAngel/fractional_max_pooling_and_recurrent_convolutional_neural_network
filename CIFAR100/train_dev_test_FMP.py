@@ -44,8 +44,8 @@ def bulid_model():
     writer = tf.summary.FileWriter(
             os.path.join(LOG_DIR,'train'), tf.get_default_graph())
     variables['writer'] = writer
+    global_step = tf.train.get_or_create_global_step()
     learning_rate = tf.train.exponential_decay(LEARNING_RATE_BASE, global_step, 1000, WEIGHT_DECAY_RATE)
-    global_step = tf.get_or_create_global_step()
     variables['global_step'] = global_step
     optimizer = tf.train.AdamOptimizer(learning_rate)
     trainable_variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
