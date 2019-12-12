@@ -110,3 +110,5 @@ model/
 *idx1-ubyte
 data_batch_*
 test_batch
+
+sftp-config.json
