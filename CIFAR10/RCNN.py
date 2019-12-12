@@ -20,7 +20,8 @@ class RCNN:
         self.rate = RATE
 
         def local_response_normalization(x):
-            return tf.nn.local_response_normalization(x, alpha=0.001, beta=0.75, depth_radius=FILTERS//16)
+            return tf.nn.local_response_normalization(
+                x, FILTERS/16, alpha=0.001, beta=0.75)
 
         config1 = {'padding': 'same', 'activation': tf.nn.relu, 
                     'kernel_regularizer': tf.keras.regularizers.l2(WEIGHT_DECAY), 
@@ -130,10 +131,10 @@ if __name__ == "__main__":
                 flags.name, flags.filters, flags.lr, flags.drop), 
             monitor='val_acc', save_best_only=True), 
         tf.keras.callbacks.ReduceLROnPlateau(
-            monitor='val_acc', factor=0.1, patience=7, min_lr=1e-6)]
+            monitor='val_acc', factor=0.1, patience=7, min_lr=flags.lr/1000.)]
     train_model.summary()
     train_model.compile(
-        optimizer=tf.keras.optimizers.SGD(0.001, momentum=0.9, nesterov=True), 
+        optimizer=tf.keras.optimizers.SGD(0.001, 0.9, nesterov=True), 
         loss='categorical_crossentropy', metrics=['acc'])
 
     history = train_model.fit_generator(
@@ -145,4 +146,3 @@ if __name__ == "__main__":
     test_result = train_model.evaluate_generator(test_generator)
     print(test_result)
 
-    
