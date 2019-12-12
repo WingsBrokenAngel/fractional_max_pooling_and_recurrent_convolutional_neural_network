@@ -18,7 +18,7 @@ class RCNN:
 
         def local_response_normalization(x):
             return tf.nn.local_response_normalization(
-                x, FILTERS/16, alpha=0.001, beta=0.75)
+                x, FILTERS//16, alpha=0.001, beta=0.75)
 
         config1 = {'padding': 'same', 'activation': tf.nn.relu, 
                     'kernel_regularizer': tf.keras.regularizers.l2(WEIGHT_DECAY), 
@@ -141,7 +141,7 @@ if __name__ == "__main__":
                 flags.name, flags.filters, flags.lr, flags.wdecay, flags.drop), 
             monitor='val_acc', save_best_only=True), 
         tf.keras.callbacks.ReduceLROnPlateau(
-            monitor='val_acc', factor=0.5, patience=5, min_lr=flags.lr/1000.)]
+            monitor='val_acc', factor=0.5, patience=5, min_lr=1e-6)]
     train_model.summary()
     train_model.compile(
         optimizer=tf.keras.optimizers.SGD(flags.lr, 0.9, nesterov=True), 
@@ -151,7 +151,7 @@ if __name__ == "__main__":
     	optimizer='adam', loss='categorical_crossentropy', metrics=['acc'])
 
     history = train_model.fit_generator(
-        train_generator, epochs=128, 
+        train_generator, epochs=256, 
         validation_data=val_generator, max_queue_size=128, workers=2, 
         callbacks=callbacks_list)
 
