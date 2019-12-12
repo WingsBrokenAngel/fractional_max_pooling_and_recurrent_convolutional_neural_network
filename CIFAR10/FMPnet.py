@@ -12,18 +12,18 @@ import tensorflow.keras.datasets.cifar10 as cifar10
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.activations import relu
-from config import Config
+import tensorflow.keras.backend as K
 
 NUM_FILTERS = 160
-KERNEL_SIZE = 3
+KERNEL_SIZE = 2
 NUM_OUTPUT = 10
-RATIO = [1.0, 2**(1/3), 2**(1/3), 1.0]
+RATIO = [1.0, 2**(1/2), 2**(1/2), 1.0]
 PSEUDO_RANDOM = True
 OVERLAPPING = True
 
 
 def fractional_max_pool(x):
-    return tf.nn.fractional_max_pool(x, RATIO, PSEUDO_RANDOM, OVERLAPPING)
+    return tf.nn.fractional_max_pool(x, RATIO, PSEUDO_RANDOM, OVERLAPPING)[0]
 
 
 class FMP:
@@ -32,7 +32,11 @@ class FMP:
         self.filters = FILTERS
         self.drop_rate = DROP_RATE
 
-        config = {'padding': 'same', 'activation': tf.nn.relu, 
+        config1 = {'padding': 'valid', 'activation': tf.nn.relu, 
+                    'kernel_regularizer': tf.keras.regularizers.l2(WEIGHT_DECAY), 
+                    'kernel_size': KERNEL_SIZE}
+
+        config2 = {'padding': 'valid', 'activation': tf.nn.relu, 
                     'kernel_regularizer': tf.keras.regularizers.l2(WEIGHT_DECAY), 
                     'kernel_size': KERNEL_SIZE}
 
@@ -56,23 +60,15 @@ class FMP:
         self.layer5_pool = layers.Lambda(fractional_max_pool)
         self.layer5_dp = layers.Dropout(self.drop_rate)
 
-        self.layer6 = layers.Conv2D(FILTERS*6, **config1)
-        self.layer6_pool = layers.Lambda(fractional_max_pool)
+        self.layer6 = layers.Conv2D(FILTERS*6, **config2)
         self.layer6_dp = layers.Dropout(self.drop_rate)
 
-        self.layer7 = layers.Conv2D(FILTERS*7, **config1)
-        self.layer7_pool = layers.Lambda(fractional_max_pool)
-        self.layer7_dp = layers.Dropout(self.drop_rate)
-
-
-        self.layer8 = layers.Conv2D(FILTERS*8, **config1)
-        self.layer8_dp = layers.Dropout(self.drop_rate)
-
-        self.layer9 = layers.Conv2D(10, kernel_size=1, activation='softmax')
+        self.layer7 = layers.Conv2D(10, kernel_size=1, activation='softmax')
+        self.flatten = layers.Flatten()
 
 
     def __call__(self, imgs, train=True):
-        x = self.layer1_dp(self.layer1_pool(self.layer1(x)), training=train)
+        x = self.layer1_dp(self.layer1_pool(self.layer1(imgs)), training=train)
 
         x = self.layer2_dp(self.layer2_pool(self.layer2(x)), training=train)
 
@@ -81,15 +77,11 @@ class FMP:
         x = self.layer4_dp(self.layer4_pool(self.layer4(x)), training=train)
 
         x = self.layer5_dp(self.layer5_pool(self.layer5(x)), training=train)
+        
+        x = self.layer6_dp(self.layer6(x), training=train)
 
-        x = self.layer6_dp(self.layer6_pool(self.layer6(x)), training=train)
-
-        x = self.layer7_dp(self.layer7_pool(self.layer7(x)), training=train)
-
-        x = self.layer8_dp(self.layer8(x), training=train)
-
-        y = self.layer9(x)
-
+        y = self.layer7(x)
+        y = self.flatten(y)
         return y
 
 
@@ -129,25 +121,22 @@ if __name__ == "__main__":
     callbacks_list = [
         tf.keras.callbacks.ModelCheckpoint(
             filepath='./model/%s-%d-%g-%g-%g-best.h5'%(
-                flags.name, flags.filters, flags.lr, flags.drop, flag.wdecay), 
+                flags.name, flags.filters, flags.lr, flags.drop, flags.wdecay), 
             monitor='val_acc', save_best_only=True), 
         tf.keras.callbacks.ReduceLROnPlateau(
-            monitor='val_acc', factor=0.1, patience=7, min_lr=flags.lr/1000.)]
+            monitor='val_acc', factor=0.5, patience=5, min_lr=flags.lr/1000.)]
     train_model.summary()
     train_model.compile(
-        optimizer=tf.keras.optimizers.SGD(0.001, 0.9, nesterov=True), 
+        optimizer=tf.keras.optimizers.Adam(flags.lr), 
         loss='categorical_crossentropy', metrics=['acc'])
+    test_model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['acc'])
 
     history = train_model.fit_generator(
         train_generator, epochs=128, 
         validation_data=val_generator, max_queue_size=128, workers=2, 
         callbacks=callbacks_list)
-    
-    train_model.load_weights('./model/%s-%d-%g-%g-%g-best.h5'%(
-                flags.name, flags.filters, flags.lr, flags.drop, flags.wdecay))
-    test_result = train_model.evaluate_generator(test_generator)
-    print(test_result)
 
+    print(test_model.evaluate_generator(test_generator))
     test_model.load_weights('./model/%s-%d-%g-%g-%g-best.h5'%(
                 flags.name, flags.filters, flags.lr, flags.drop, flags.wdecay))
     test_result = test_model.evaluate_generator(test_generator)
