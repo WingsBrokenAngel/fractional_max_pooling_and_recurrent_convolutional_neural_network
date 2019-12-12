@@ -10,8 +10,6 @@ from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.activations import relu
 import tensorflow.keras.backend as K
 
-
-
 class RCNN:
     def __init__(self, FILTERS, WEIGHT_DECAY, RATE):
         self.decay_rate = WEIGHT_DECAY
