@@ -14,7 +14,7 @@ import preprocess as pps
 os.environ['CUDA_VISIBLE_DEVICES'] = '7'
 IMAGE_SIZE = 46
 BATCH_SIZE = 128
-LEARNING_RATE_BASE = 0.0001
+LEARNING_RATE_BASE = 0.01
 EPOCH = 128
 WEIGHT_DECAY_RATE = 1.
 MODEL_SAVE_PATH = os.path.join('.', 'model')
