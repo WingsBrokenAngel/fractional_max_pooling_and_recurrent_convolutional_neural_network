@@ -100,6 +100,7 @@ if __name__ == "__main__":
     tf.app.flags.DEFINE_float('lr', 0.001, 'Learning rate of the model')
     tf.app.flags.DEFINE_float('drop', 0.1, 'Drop rate for dropout layers')
     tf.app.flags.DEFINE_integer('filters', 96, 'Filter number')
+    tf.app.flags.DEFINE_float('wdecay', 0.0001, 'Weight Decay')
     flags = tf.app.flags.FLAGS
 
     data = cifar10.load_data()
@@ -121,14 +122,14 @@ if __name__ == "__main__":
     test_generator = test_datagen.flow(
         test_data, test_labels, batch_size=128, shuffle=False)
 
-    rcnn = RCNN(flags.filters, flags.lr, flags.drop)
+    rcnn = RCNN(flags.filters, flags.wdecay, flags.drop)
     input_tensor_train = tf.keras.Input(shape=(32, 32, 3))
     output_tensor_train = rcnn(input_tensor_train, True, 3)
     train_model = tf.keras.Model(input_tensor_train, output_tensor_train)
     callbacks_list = [
         tf.keras.callbacks.ModelCheckpoint(
-            filepath='./model/%s-%d-%f-%f-best.h5'%(
-                flags.name, flags.filters, flags.lr, flags.drop), 
+            filepath='./model/%s-%d-%g-%g-%g-best.h5'%(
+                flags.name, flags.filters, flags.lr, flags.wdecay, flags.drop), 
             monitor='val_acc', save_best_only=True), 
         tf.keras.callbacks.ReduceLROnPlateau(
             monitor='val_acc', factor=0.1, patience=7, min_lr=flags.lr/1000.)]
@@ -141,8 +142,8 @@ if __name__ == "__main__":
         train_generator, epochs=128, 
         validation_data=val_generator, max_queue_size=128, workers=2, 
         callbacks=callbacks_list)
-    train_model.load_weights('./model/%s-%d-%f-%f-best.h5'%(
-                flags.name, flags.filters, flags.lr, flags.drop))
+    train_model.load_weights('./model/%s-%d-%g-%g-%g-best.h5'%(
+                flags.name, flags.filters, flags.lr, flags.wdecay, flags.drop))
     test_result = train_model.evaluate_generator(test_generator)
     print(test_result)
 
