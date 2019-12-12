@@ -14,136 +14,91 @@ from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.activations import relu
 from config import Config
 
-cfg = Config()
 NUM_FILTERS = 160
-CONV_SIZE = 2
-NUM_CHANNELS = 3
+KERNEL_SIZE = 3
 NUM_OUTPUT = 10
 RATIO = [1.0, 2**(1/3), 2**(1/3), 1.0]
-PSEUDO_RANDOM = cfg.pseudo_random
-OVERLAPPING = cfg.overlapping
+PSEUDO_RANDOM = True
+OVERLAPPING = True
 
 
 def fractional_max_pool(x):
     return tf.nn.fractional_max_pool(x, RATIO, PSEUDO_RANDOM, OVERLAPPING)
 
 
-def single_conv_layer(input_tensor, num_filters, pool_flag, name):
-    
-    with tf.variable_scope(name):
-        conv = layers.Conv2D(num_filters, 2, activation=tf.nn.relu)
-        x = conv(input_tensor)
-        if pool_flag:
-            x, row_sq, col_sq = tf.nn.fractional_max_pool(
-                    x, RATIO, PSEUDO_RANDOM, OVERLAPPING)
-        print(x.name, x.get_shape(), flush=True)
-    return x
-
-
-def inference(input_tensor, keep_rate):
-    x = single_conv_layer(input_tensor, NUM_FILTERS, True, 'conv1')
-    x = single_conv_layer(x, NUM_FILTERS*2, True, 'conv2')
-    x = single_conv_layer(x, NUM_FILTERS*3, True, 'conv3')
-    x = single_conv_layer(x, NUM_FILTERS*4, True, 'conv4')
-    x = single_conv_layer(x, NUM_FILTERS*5, True, 'conv5')
-    x = single_conv_layer(x, NUM_FILTERS*6, True, 'conv6')
-    x = single_conv_layer(x, NUM_FILTERS*7, True, 'conv7')
-    x = single_conv_layer(x, NUM_FILTERS*4, False, 'conv8')
-    x = tf.nn.dropout(x, keep_rate)
-    conv = layers.Conv2D(NUM_OUTPUT, 1)
-    x = conv(x) 
-    x = tf.squeeze(x)
-    print('final', x.name, x.get_shape(), flush=True)
-    return x
-
-
 class FMP:
-    def __init__(self, FILTERS, WEIGHT_DECAY, RATE):
-        self.decay_rate = WEIGHT_DECAY
+    def __init__(self, FILTERS, WEIGHT_DECAY, DROP_RATE):
+        self.weight_decay = WEIGHT_DECAY
         self.filters = FILTERS
-        self.rate = RATE
+        self.drop_rate = DROP_RATE
 
-        def local_response_normalization(x):
-            return tf.nn.local_response_normalization(
-                x, FILTERS/16, alpha=0.001, beta=0.75)
-
-        config1 = {'padding': 'same', 'activation': tf.nn.relu, 
+        config = {'padding': 'same', 'activation': tf.nn.relu, 
                     'kernel_regularizer': tf.keras.regularizers.l2(WEIGHT_DECAY), 
-                    'filters': FILTERS, 'kernel_size': 5}
+                    'kernel_size': KERNEL_SIZE}
 
-        config2 = {'filters':FILTERS, 'kernel_size': 3, 'padding': 'same', 
-                    'kernel_regularizer': tf.keras.regularizers.l2(WEIGHT_DECAY)}
+        self.layer1 = layers.Conv2D(FILTERS, **config1)
+        self.layer1_pool = layers.Lambda(fractional_max_pool)
+        self.layer1_dp = layers.Dropout(self.drop_rate)
 
-        self.lrn = layers.Lambda(local_response_normalization)
-        self.relu = layers.Lambda(lambda x: relu(x))
+        self.layer2 = layers.Conv2D(FILTERS*2, **config1)
+        self.layer2_pool = layers.Lambda(fractional_max_pool)
+        self.layer2_dp = layers.Dropout(self.drop_rate)
 
-        self.layer1 = layers.Conv2D(**config1)
-        self.layer1_pool = layers.MaxPool2D(3, 2, 'same')
-        self.layer1_dp = layers.Dropout(self.rate)
+        self.layer3 = layers.Conv2D(FILTERS*3, **config1)
+        self.layer3_pool = layers.Lambda(fractional_max_pool)
+        self.layer3_dp = layers.Dropout(self.drop_rate)
 
-        self.layer2_forward = layers.Conv2D(**config2)
-        self.layer2_recurrent = layers.Conv2D(**config2, use_bias=False)
-        self.layer2_pool = layers.MaxPool2D(3, 2, 'same')
-        self.layer2_dp = layers.Dropout(self.rate)
+        self.layer4 = layers.Conv2D(FILTERS*4, **config1)
+        self.layer4_pool = layers.Lambda(fractional_max_pool)
+        self.layer4_dp = layers.Dropout(self.drop_rate)
 
-        self.layer3_forward = layers.Conv2D(**config2)
-        self.layer3_recurrent = layers.Conv2D(**config2, use_bias=False)
-        self.layer3_pool = layers.MaxPool2D(3, 2, 'same')
-        self.layer3_dp = layers.Dropout(self.rate)
+        self.layer5 = layers.Conv2D(FILTERS*5, **config1)
+        self.layer5_pool = layers.Lambda(fractional_max_pool)
+        self.layer5_dp = layers.Dropout(self.drop_rate)
 
-        self.layer4_forward = layers.Conv2D(**config2)
-        self.layer4_recurrent = layers.Conv2D(**config2, use_bias=False)
-        self.layer4_pool = layers.MaxPool2D(3, 2, 'same')
-        self.layer4_dp = layers.Dropout(self.rate)
+        self.layer6 = layers.Conv2D(FILTERS*6, **config1)
+        self.layer6_pool = layers.Lambda(fractional_max_pool)
+        self.layer6_dp = layers.Dropout(self.drop_rate)
 
-        self.layer5_forward = layers.Conv2D(**config2)
-        self.layer5_recurrent = layers.Conv2D(**config2, use_bias=False)
-        self.layer5_gpool = layers.GlobalMaxPool2D()
-
-        self.layer6_dense = layers.Dense(10, activation='softmax')
+        self.layer7 = layers.Conv2D(FILTERS*7, **config1)
+        self.layer7_pool = layers.Lambda(fractional_max_pool)
+        self.layer7_dp = layers.Dropout(self.drop_rate)
 
 
-    def __call__(self, imgs, train=True, recur=3):
-        x = self.layer1(imgs)
-        x = self.layer1_pool(x)
-        x = self.layer1_dp(x, training=train)
+        self.layer8 = layers.Conv2D(FILTERS*8, **config1)
+        self.layer8_dp = layers.Dropout(self.drop_rate)
 
-        x = self._recurrent_layer(
-            x, self.layer2_forward, self.layer2_recurrent, recur, 
-            self.layer2_pool, self.layer2_dp, train)
+        self.layer9 = layers.Conv2D(10, kernel_size=1, activation='softmax')
 
-        x = self._recurrent_layer(
-            x, self.layer3_forward, self.layer3_recurrent, recur, 
-            self.layer3_pool, self.layer3_dp, train)
 
-        x = self._recurrent_layer(
-            x, self.layer4_forward, self.layer4_recurrent, recur, 
-            self.layer4_pool, self.layer4_dp, train)
+    def __call__(self, imgs, train=True):
+        x = self.layer1_dp(self.layer1_pool(self.layer1(x)), training=train)
 
-        x = self._recurrent_layer(
-            x, self.layer5_forward, self.layer5_recurrent, recur, 
-            self.layer5_gpool, None, train)
+        x = self.layer2_dp(self.layer2_pool(self.layer2(x)), training=train)
 
-        y = self.layer6_dense(x)
+        x = self.layer3_dp(self.layer3_pool(self.layer3(x)), training=train)
+
+        x = self.layer4_dp(self.layer4_pool(self.layer4(x)), training=train)
+
+        x = self.layer5_dp(self.layer5_pool(self.layer5(x)), training=train)
+
+        x = self.layer6_dp(self.layer6_pool(self.layer6(x)), training=train)
+
+        x = self.layer7_dp(self.layer7_pool(self.layer7(x)), training=train)
+
+        x = self.layer8_dp(self.layer8(x), training=train)
+
+        y = self.layer9(x)
+
         return y
-
-    def _recurrent_layer(self, x, forward, recurrent, recur, pool, dp=None, train=True):
-        x_forward = forward(x)
-        x_iter = self.lrn(self.relu(x_forward))
-        for _ in range(recur):
-            x_iter = self.lrn(self.relu(layers.add([recurrent(x_iter), x_forward])))
-        
-        x = pool(x_iter)
-        if dp:
-           x = dp(x, training=train)
-        return x
 
 
 if __name__ == "__main__":
-    tf.app.flags.DEFINE_string('name', 'rcnn', 'name of model')
+    tf.app.flags.DEFINE_string('name', 'fmp', 'name of model')
     tf.app.flags.DEFINE_float('lr', 0.001, 'Learning rate of the model')
-    tf.app.flags.DEFINE_float('drop', 0.1, 'Drop rate for dropout layers')
-    tf.app.flags.DEFINE_integer('filters', 96, 'Filter number')
+    tf.app.flags.DEFINE_float('drop', 0.05, 'Drop rate for dropout layers')
+    tf.app.flags.DEFINE_integer('filters', 160, 'Filter number')
+    tf.app.flags.DEFINE_float('wdecay', 1e-4, 'Weight decay rate')
     flags = tf.app.flags.FLAGS
 
     data = cifar10.load_data()
@@ -165,14 +120,16 @@ if __name__ == "__main__":
     test_generator = test_datagen.flow(
         test_data, test_labels, batch_size=128, shuffle=False)
 
-    rcnn = RCNN(flags.filters, flags.lr, flags.drop)
-    input_tensor_train = tf.keras.Input(shape=(32, 32, 3))
-    output_tensor_train = rcnn(input_tensor_train, True, 3)
-    train_model = tf.keras.Model(input_tensor_train, output_tensor_train)
+    fmp = FMP(flags.filters, flags.wdecay, flags.drop)
+    input_tensor = tf.keras.Input(shape=(32, 32, 3))
+    output_tensor_train = fmp(input_tensor, True)
+    output_tensor_test = fmp(input_tensor, False)
+    train_model = tf.keras.Model(input_tensor, output_tensor_train)
+    test_model = tf.keras.Model(input_tensor, output_tensor_test)
     callbacks_list = [
         tf.keras.callbacks.ModelCheckpoint(
-            filepath='./model/%s-%d-%f-%f-best.h5'%(
-                flags.name, flags.filters, flags.lr, flags.drop), 
+            filepath='./model/%s-%d-%g-%g-%g-best.h5'%(
+                flags.name, flags.filters, flags.lr, flags.drop, flag.wdecay), 
             monitor='val_acc', save_best_only=True), 
         tf.keras.callbacks.ReduceLROnPlateau(
             monitor='val_acc', factor=0.1, patience=7, min_lr=flags.lr/1000.)]
@@ -185,8 +142,13 @@ if __name__ == "__main__":
         train_generator, epochs=128, 
         validation_data=val_generator, max_queue_size=128, workers=2, 
         callbacks=callbacks_list)
-    train_model.load_weights('./model/%s-%d-%f-%f-best.h5'%(
-                flags.name, flags.filters, flags.lr, flags.drop))
+    
+    train_model.load_weights('./model/%s-%d-%g-%g-%g-best.h5'%(
+                flags.name, flags.filters, flags.lr, flags.drop, flags.wdecay))
     test_result = train_model.evaluate_generator(test_generator)
     print(test_result)
 
+    test_model.load_weights('./model/%s-%d-%g-%g-%g-best.h5'%(
+                flags.name, flags.filters, flags.lr, flags.drop, flags.wdecay))
+    test_result = test_model.evaluate_generator(test_generator)
+    print(test_result)
