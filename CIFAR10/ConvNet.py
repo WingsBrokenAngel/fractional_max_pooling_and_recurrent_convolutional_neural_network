@@ -25,45 +25,40 @@ class CONVNET:
         self.filters = FILTERS
         self.drop_rate = DROP_RATE
 
-        config1 = {'padding': 'same', 'activation': tf.nn.relu, 
-                    'kernel_size': KERNEL_SIZE}
+        config1 = {'padding': 'same', 'activation': None, 'kernel_size': KERNEL_SIZE, 
+                   'kernel_regularizer': tf.keras.regularizers.l2(WEIGHT_DECAY)}
 
         config2 = {'padding': 'valid', 'activation': tf.nn.relu, 
                     'kernel_size': KERNEL_SIZE}
 
+        self.relu = layers.Lambda(lambda x: relu(x))
+        self.pool = layers.MaxPool2D()
+
         self.layer1 = layers.Conv2D(FILTERS, **config1)
-        self.layer1_pool = layers.MaxPool2D()
-        self.layer1_dp = layers.Dropout(self.drop_rate)
 
         self.layer2 = layers.Conv2D(FILTERS*2, **config1)
-        self.layer2_pool = layers.MaxPool2D()
-        self.layer2_dp = layers.Dropout(self.drop_rate)
 
         self.layer3 = layers.Conv2D(FILTERS*3, **config1)
-        self.layer3_pool = layers.MaxPool2D()
-        self.layer3_dp = layers.Dropout(self.drop_rate)
 
         self.layer4 = layers.Conv2D(FILTERS*4, **config1)
-        self.layer4_pool = layers.MaxPool2D()
-        self.layer4_dp = layers.Dropout(self.drop_rate)
 
         self.layer5 = layers.Conv2D(FILTERS*5, **config1)
-        self.layer5_pool = layers.MaxPool2D()
         self.flatten = layers.Flatten()
+        self.dp = layers.Dropout(self.drop_rate)
         self.layer6 = layers.Dense(10, activation='softmax')
 
 
     def __call__(self, imgs, train=True):
-        x = self.layer1_dp(self.layer1_pool(self.layer1(imgs)), training=train)
+        x = self.pool(self.relu(layers.BatchNormalization()(self.layer1(imgs))))
 
-        x = self.layer2_dp(self.layer2_pool(self.layer2(x)), training=train)
+        x = self.pool(self.relu(layers.BatchNormalization()(self.layer2(x))))
 
-        x = self.layer3_dp(self.layer3_pool(self.layer3(x)), training=train)
+        x = self.pool(self.relu(layers.BatchNormalization()(self.layer3(x))))
 
-        x = self.layer4_dp(self.layer4_pool(self.layer4(x)), training=train)
+        x = self.pool(self.relu(layers.BatchNormalization()(self.layer4(x))))
 
-        x = self.layer5_pool(self.layer5(x))
-        x = self.flatten(x)
+        x = self.pool(self.relu(layers.BatchNormalization()(self.layer5(x))))
+        x = self.dp(self.flatten(x), training=train)
         y = self.layer6(x)
 
         return y
