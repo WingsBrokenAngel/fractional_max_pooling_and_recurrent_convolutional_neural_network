@@ -11,8 +11,8 @@ from tensorflow.keras.activations import relu
 import tensorflow.keras.backend as K
 from RCNN import RCNN
 from FMPnet import FMP
-from ConvNet import CONVNET
 import os
+
 
 def schedule_func(epochs, lr):
     if epochs == 0:
@@ -25,23 +25,26 @@ if __name__ == "__main__":
     tf.app.flags.DEFINE_string('name', 'rcnn', 'name of model: rcnn or fmp')
     tf.app.flags.DEFINE_string('gpu', '8', 'gpu index')
     tf.app.flags.DEFINE_float('lr', 0.001, 'Learning rate of the model')
-    tf.app.flags.DEFINE_float('drop', 0.5, 'Drop rate for dropout layers')
+    tf.app.flags.DEFINE_float('drop', 0.4, 'Drop rate for dropout layers')
     tf.app.flags.DEFINE_integer('filters', 96, 'Filter number')
     tf.app.flags.DEFINE_float('wdecay', 0.0001, 'Weight Decay')
     flags = tf.app.flags.FLAGS
 
     os.environ['CUDA_VISIBLE_DEVICES'] = flags.gpu
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    K.set_session(tf.Session(config=config))
     
-    data = cifar10.load_data()
+    data = cifar100.load_data()
     (train_data, train_labels), (test_data, test_labels) = data
     train_labels = to_categorical(train_labels)
     test_labels = to_categorical(test_labels)
 
     train_datagen = ImageDataGenerator(
-        rotation_range=20, width_shift_range=0.2, height_shift_range=0.2, zoom_range=0.2, 
-        brightness_range=[0.8, 1.2], horizontal_flip=True, rescale=1./255)
+        rotation_range=30, width_shift_range=8, height_shift_range=8,
+        horizontal_flip=True, rescale=1./255)
     train_generator = train_datagen.flow(
-        train_data[:-5000], train_labels[:-5000], batch_size=256)
+        train_data, train_labels, batch_size=256)
 
     val_datagen = ImageDataGenerator(rescale=1./255)
     val_generator = val_datagen.flow(train_data[-5000:], 
@@ -74,7 +77,7 @@ if __name__ == "__main__":
         tf.keras.callbacks.ModelCheckpoint(
             filepath='./model/%s-%d-%g-%g-%g-best.h5'%(
                 flags.name, flags.filters, flags.lr, flags.wdecay, flags.drop), 
-            monitor='val_acc', save_best_only=True), 
+            monitor='acc', save_best_only=True), 
         tf.keras.callbacks.LearningRateScheduler(schedule_func, 1)]
     train_model.summary()
     train_model.compile(
@@ -86,7 +89,7 @@ if __name__ == "__main__":
 
     history = train_model.fit_generator(
         train_generator, epochs=256, 
-        validation_data=val_generator, max_queue_size=256, workers=2, 
+        # validation_data=val_generator, max_queue_size=256, workers=2, 
         callbacks=callbacks_list)
 
     test_model.load_weights('./model/%s-%d-%g-%g-%g-best.h5'%(

@@ -1,11 +1,14 @@
 # Fractional Max Pooling and Recurrent Convolutional Neural Network
-## Fractional Max Pooling
-This repository is implemented based on [Fractional Max-Pooling](https://arxiv.org/abs/1412.6071) which is written by Benjamin Graham in 2014. It is the top-1 model in [CIFAR-10 result list](http://rodrigob.github.io/are_we_there_yet/build/classification_datasets_results.html#43494641522d3130).
-### Requirements
+
+## Requirements
 - Python3.6
 - TensorFlow-gpu 1.13
 - NumPy
-- PIL
+- Keras
+
+## Fractional Max Pooling
+This repository is implemented based on [Fractional Max-Pooling](https://arxiv.org/abs/1412.6071) which is written by Benjamin Graham in 2014. It is the top-1 model in [CIFAR-10 result list](http://rodrigob.github.io/are_we_there_yet/build/classification_datasets_results.html#43494641522d3130).
+
 
 ### Model Description
 ![The effect of fractional max-pooling](./imgs/fractional_max_pooling.png)
@@ -55,8 +58,30 @@ The number of layers is reduced since it is too time consuming to train the netw
 
 | The number of repeated tests 	| pseudorandom overlapping 	| 
 |---------------------------	|----------------------		|
-| 1 test (mine)				   	|   48.08%                	|	
-| 12 test (mine)                |   0.34%                  	|	
+| 1 test (mine)				   	|   ---                  	|	
+| 12 test (mine)                |   ---                 	|	
 
 
 ## Recurrent Convolutional Neural Network
+The code of this part is implemented according to [Recurrent Convolutional Neural Network for Object Recognition](https://ieeexplore.ieee.org/document/7298958/). 
+Local response normalization is replaced by batch normalization. Only last hidden layer is followed by a dropout layer. Adam optimizer is used to optimize the model. Learning rate decays exponentially. Image shift and horizental flip are utilized for data augmentation.
+### CIFAR10
+
+| model                      	| Error Rate            	| 
+|---------------------------	|----------------------		|
+| This code (one crop)			|   10.53%                	|	
+| In paper (nine crop)          |   7.37%                  	|	
+
+### CIFAR100
+
+| model                      	| Error Rate            	| 
+|---------------------------	|----------------------		|
+| This code (one crop)			|   -----               	|	
+| In paper (nine crop)          |   -----                  	|	
+
+### MNIST
+
+| model                      	| Error Rate            	| 
+|---------------------------	|----------------------		|
+| This code (one crop)			|   -----               	|	
+| In paper (nine crop)          |   -----                  	|	
