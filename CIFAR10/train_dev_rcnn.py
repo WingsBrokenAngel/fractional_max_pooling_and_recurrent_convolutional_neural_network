@@ -26,8 +26,8 @@ if __name__ == "__main__":
     test_labels = to_categorical(test_labels)
 
     train_datagen = ImageDataGenerator(
-        rotation_range=10, width_shift_range=0.1, height_shift_range=0.1, 
-        zoom_range=0.1, horizontal_flip=True, rescale=1./255)
+        rotation_range=20, width_shift_range=0.2, height_shift_range=0.2, zoom_range=0.2, 
+        brightness_range=[0.8, 1.2], horizontal_flip=True, rescale=1./255)
     train_generator = train_datagen.flow(
         train_data[:-5000], train_labels[:-5000], batch_size=256)
 
