@@ -28,16 +28,17 @@ class RCNN:
         self.layer1 = layers.Conv2D(**config1)
 
         self.layer2_forward = layers.Conv2D(**config2)
-        self.layer2_recurrent = layers.Conv2D(**config2)
+
+        self.layer2_recurrent = layers.Conv2D(**config2, use_bias=False)
 
         self.layer3_forward = layers.Conv2D(**config2)
-        self.layer3_recurrent = layers.Conv2D(**config2)
+        self.layer3_recurrent = layers.Conv2D(**config2, use_bias=False)
 
         self.layer4_forward = layers.Conv2D(**config2)
-        self.layer4_recurrent = layers.Conv2D(**config2)
+        self.layer4_recurrent = layers.Conv2D(**config2, use_bias=False)
 
         self.layer5_forward = layers.Conv2D(**config2)
-        self.layer5_recurrent = layers.Conv2D(**config2)
+        self.layer5_recurrent = layers.Conv2D(**config2, use_bias=False)
         self.layer5_gpool = layers.GlobalMaxPool2D()
         self.layer5_dp = layers.Dropout(self.rate)
 
@@ -74,10 +75,12 @@ class RCNN:
         x_r = x
         for step in range(1 + recur):
             if step == 0:
-                x_r = self.relu(layers.BatchNormalization()(forward(x_f), training=train))
+                x_r = self.relu(
+                    layers.BatchNormalization()(forward(x_f), training=train))
             else:
                 x_r = self.relu(layers.BatchNormalization()(
                     layers.add([recurrent(x_r), forward(x_f)]), training=train))
         
         x = pool(x_r)
         return x
+

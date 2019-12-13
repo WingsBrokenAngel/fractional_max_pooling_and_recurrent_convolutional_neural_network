@@ -32,69 +32,59 @@ class FMP:
         self.filters = FILTERS
         self.drop_rate = DROP_RATE
 
-        config1 = {'padding': 'same', 'activation': tf.nn.relu, 
+        config1 = {'padding': 'same', 'activation': None, 
                     'kernel_regularizer': tf.keras.regularizers.l2(WEIGHT_DECAY), 
                     'kernel_size': KERNEL_SIZE}
 
-        config2 = {'padding': 'valid', 'activation': tf.nn.relu, 
+        config2 = {'padding': 'valid', 'activation': None, 
                     'kernel_regularizer': tf.keras.regularizers.l2(WEIGHT_DECAY), 
                     'kernel_size': KERNEL_SIZE}
+
+        self.relu = layers.Lambda(lambda x: relu(x))
+        self.pool = layers.Lambda(fractional_max_pool)
 
         self.layer1 = layers.Conv2D(FILTERS, **config1)
-        self.layer1_pool = layers.Lambda(fractional_max_pool)
 
         self.layer2 = layers.Conv2D(FILTERS*2, **config1)
-        self.layer2_pool = layers.Lambda(fractional_max_pool)
 
         self.layer3 = layers.Conv2D(FILTERS*3, **config1)
-        self.layer3_pool = layers.Lambda(fractional_max_pool)
 
         self.layer4 = layers.Conv2D(FILTERS*4, **config1)
-        self.layer4_pool = layers.Lambda(fractional_max_pool)
 
         self.layer5 = layers.Conv2D(FILTERS*5, **config1)
-        self.layer5_pool = layers.Lambda(fractional_max_pool)
 
         self.layer6 = layers.Conv2D(FILTERS*6, **config1)
-        self.layer6_pool = layers.Lambda(fractional_max_pool)
 
         self.layer7 = layers.Conv2D(FILTERS*7, **config1)
-        self.layer7_pool = layers.Lambda(fractional_max_pool)
 
-        self.layer8 = layers.Conv2D(FILTERS*8, **config1)
-        self.layer8_pool = layers.Lambda(fractional_max_pool)
-
-        self.layer9 = layers.Conv2D(FILTERS*9, **config1)
-        self.layer9_pool = layers.Lambda(fractional_max_pool)
-
-        self.layer10 = layers.Conv2D(FILTERS*10, **config2)
-        self.layer10_dp = layers.Dropout(self.drop_rate)
-
-        self.layer11 = layers.Conv2D(10, kernel_size=1, activation='softmax')
+        self.dp = layers.Dropout(self.drop_rate)
         self.flatten = layers.Flatten()
+        self.layer8 = layers.Dense(10, activation='softmax')
 
 
     def __call__(self, imgs, train=True):
-        x = self.layer1_pool(self.layer1(imgs))
+        x = self.pool(self.relu(
+            layers.BatchNormalization()(self.layer1(imgs), training=train)))
 
-        x = self.layer2_pool(self.layer2(x))
+        x = self.pool(self.relu(
+            layers.BatchNormalization()(self.layer2(x), training=train)))
 
-        x = self.layer3_pool(self.layer3(x))
+        x = self.pool(self.relu(
+            layers.BatchNormalization()(self.layer3(x), training=train)))
 
-        x = self.layer4_pool(self.layer4(x))
+        x = self.pool(self.relu(
+            layers.BatchNormalization()(self.layer4(x), training=train)))
 
-        x = self.layer5_pool(self.layer5(x))
+        x = self.pool(self.relu(
+            layers.BatchNormalization()(self.layer5(x), training=train)))
 
-        x = self.layer6_pool(self.layer6(x))
+        x = self.pool(self.relu(
+            layers.BatchNormalization()(self.layer6(x), training=train)))
 
-        x = self.layer7_pool(self.layer7(x))
+        x = self.pool(self.relu(
+            layers.BatchNormalization()(self.layer7(x), training=train)))
 
-        x = self.layer8_pool(self.layer8(x))
+        x = self.dp(self.flatten(x), training=train)
 
-        x = self.layer9_pool(self.layer9(x))
-
-        x = self.layer10_dp(self.layer10(x))
-
-        y = self.layer11(x)
-        y = self.flatten(y)
+        y = self.layer8(x)
         return y
