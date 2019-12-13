@@ -4,13 +4,14 @@ Date: 12/10/2019
 '''
 import tensorflow as tf
 import tensorflow.keras.layers as layers
-import tensorflow.keras.datasets.cifar10 as cifar10
+import tensorflow.keras.datasets.cifar100 as cifar100
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.activations import relu
 import tensorflow.keras.backend as K
 from RCNN import RCNN
 from FMPnet import FMP
+from ConvNet import CONVNET
 import os
 
 def schedule_func(epochs, lr):
@@ -21,7 +22,7 @@ def schedule_func(epochs, lr):
 
 
 if __name__ == "__main__":
-    tf.app.flags.DEFINE_string('name', 'rcnn', 'name of model: rcnn, fmp')
+    tf.app.flags.DEFINE_string('name', 'rcnn', 'name of model: rcnn or fmp')
     tf.app.flags.DEFINE_string('gpu', '8', 'gpu index')
     tf.app.flags.DEFINE_float('lr', 0.001, 'Learning rate of the model')
     tf.app.flags.DEFINE_float('drop', 0.5, 'Drop rate for dropout layers')
