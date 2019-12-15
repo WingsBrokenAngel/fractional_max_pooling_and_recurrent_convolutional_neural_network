@@ -14,7 +14,6 @@ from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.activations import relu
 import tensorflow.keras.backend as K
 
-NUM_FILTERS = 160
 KERNEL_SIZE = 2
 NUM_OUTPUT = 10
 RATIO = [1.0, 2**(1/3), 2**(1/3), 1.0]
@@ -59,7 +58,7 @@ class FMP:
 
         self.dp = layers.Dropout(self.drop_rate)
         self.flatten = layers.Flatten()
-        self.layer8 = layers.Dense(10, activation='softmax')
+        self.layer8 = layers.Dense(NUM_OUTPUT, activation='softmax')
 
 
     def __call__(self, imgs, train=True):

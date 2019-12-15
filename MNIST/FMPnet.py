@@ -6,41 +6,75 @@ Date: 2018-05-02
 Modified: 2019-12-3
 '''
 
-
 import tensorflow as tf
 import tensorflow.keras.layers as layers
+import tensorflow.keras.datasets.cifar10 as cifar10
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.activations import relu
+import tensorflow.keras.backend as K
 
-NUM_FILTERS = 32
-CONV_SIZE = 2
-NUM_CHANNELS = 1
+KERNEL_SIZE = 2
 NUM_OUTPUT = 10
-RATIO = [1.0, 1.4142135623730951, 1.4142135623730951, 1.0]
+RATIO = [1.0, 2**(1/3), 2**(1/3), 1.0]
 PSEUDO_RANDOM = True
 OVERLAPPING = True
 
 
-def single_conv_layer(input_tensor, num_filters, pool_flag, name):
-    
-    with tf.variable_scope(name):
-        conv = layers.Conv2D(num_filters, 2, activation=tf.nn.relu)
-        x = conv(input_tensor)
-        if pool_flag:
-            x, row_sq, col_sq = tf.nn.fractional_max_pool(
-                    x, RATIO, PSEUDO_RANDOM, OVERLAPPING)
-        print(x.name, x.get_shape())
-    return x
+def fractional_max_pool(x):
+    return tf.nn.fractional_max_pool(x, RATIO, PSEUDO_RANDOM, OVERLAPPING)[0]
 
 
-def inference(input_tensor):
-    x = single_conv_layer(input_tensor, 32, True, 'conv1')
-    x = single_conv_layer(x, 32*2, True, 'conv2')
-    x = single_conv_layer(x, 32*3, True, 'conv3')
-    x = single_conv_layer(x, 32*4, True, 'conv4')
-    x = single_conv_layer(x, 32*5, True, 'conv5')
-    x = single_conv_layer(x, 32*6, True, 'conv6')
-    x = single_conv_layer(x, 32*6, False, 'conv7')
-    conv = layers.Conv2D(NUM_OUTPUT, 1)
-    x = conv(x) 
-    x = tf.squeeze(x)
-    return x
+class FMP:
+    def __init__(self, FILTERS, WEIGHT_DECAY, DROP_RATE):
+        self.weight_decay = WEIGHT_DECAY
+        self.filters = FILTERS
+        self.drop_rate = DROP_RATE
 
+        config1 = {'padding': 'same', 'activation': None, 
+                    'kernel_regularizer': tf.keras.regularizers.l2(WEIGHT_DECAY), 
+                    'kernel_size': KERNEL_SIZE}
+
+        self.relu = layers.Lambda(lambda x: relu(x))
+        self.pool = layers.Lambda(fractional_max_pool)
+
+        self.layer1 = layers.Conv2D(FILTERS, **config1)
+
+        self.layer2 = layers.Conv2D(FILTERS*2, **config1)
+
+        self.layer3 = layers.Conv2D(FILTERS*3, **config1)
+
+        self.layer4 = layers.Conv2D(FILTERS*4, **config1)
+
+        self.layer5 = layers.Conv2D(FILTERS*5, **config1)
+
+        self.layer6 = layers.Conv2D(FILTERS*6, **config1)
+        
+        self.flatten = layers.Flatten()
+        self.dp = layers.Dropout(self.drop_rate)
+        self.layer7 = layers.Dense(10, activation='softmax')
+
+
+    def __call__(self, imgs, train=True):
+        x = self.pool(self.relu(
+            layers.BatchNormalization()(self.layer1(imgs), training=train)))
+
+        x = self.pool(self.relu(
+            layers.BatchNormalization()(self.layer2(x), training=train)))
+
+        x = self.pool(self.relu(
+            layers.BatchNormalization()(self.layer3(x), training=train)))
+
+        x = self.pool(self.relu(
+            layers.BatchNormalization()(self.layer4(x), training=train)))
+
+        x = self.pool(self.relu(
+            layers.BatchNormalization()(self.layer5(x), training=train)))
+
+        x = self.pool(self.relu(
+            layers.BatchNormalization()(self.layer6(x), training=train)))
+
+        x = self.dp(self.flatten(x), training=train)
+
+        y = self.layer7(x)
+        return y

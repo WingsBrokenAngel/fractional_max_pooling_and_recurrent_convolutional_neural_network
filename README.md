@@ -48,6 +48,15 @@ Here is the comparison table on error rates.
 	- [data](https://cloud.tsinghua.edu.cn/f/a9724b756c164574aab3/?dl=1) 
 	SHA256: 7677d1138e39191c6c7da8029e611b23f775e966ac4b07a6a582cbb10b5f5c17
 
+#### CIFAR10
+The model structure can be written as follows: `(96nC2 - FMP 2^{1/3})_7 - C1 - output` which is a simplified network. 
+The size of input image is 32. 
+Fraction max pooling layer is too slow on Tensorflow and it is not implemented on PyTorch. 
+
+| The number of repeated tests 	| pseudorandom overlapping 	|
+|---------------------------	|----------------------		|
+| 1 test (mine)				   	|   10.76%                  |
+| 12 test (mine)                |   0.34%                  	|
 
 #### CIFAR100
 The overall structure of the model can be represented as follows:
@@ -65,23 +74,33 @@ The number of layers is reduced since it is too time consuming to train the netw
 ## Recurrent Convolutional Neural Network
 The code of this part is implemented according to [Recurrent Convolutional Neural Network for Object Recognition](https://ieeexplore.ieee.org/document/7298958/). 
 Local response normalization is replaced by batch normalization. Only last hidden layer is followed by a dropout layer. Adam optimizer is used to optimize the model. Learning rate decays exponentially. Image shift and horizental flip are utilized for data augmentation.
-### CIFAR10
-
-| model                      	| Error Rate            	| 
-|---------------------------	|----------------------		|
-| This code (one crop)			|   10.53%                	|	
-| In paper (nine crop)          |   7.37%                  	|	
-
-### CIFAR100
-
-| model                      	| Error Rate            	| 
-|---------------------------	|----------------------		|
-| This code (one crop)			|   -----               	|	
-| In paper (nine crop)          |   -----                  	|	
 
 ### MNIST
 
-| model                      	| Error Rate            	| 
-|---------------------------	|----------------------		|
-| This code (one crop)			|   -----               	|	
-| In paper (nine crop)          |   -----                  	|	
+| model                      	| Error Rate            | 
+|---------------------------	|----------------------	|
+| This code (one crop)			|   -----               |	
+| In paper (nine crop)          |   -----               |	
+
+### CIFAR10
+
+| model                      	| Error Rate            | 
+|---------------------------	|----------------------	|
+| 96 filters (one crop)			|   10.53%              |
+| 128 filters (one crop)		|	9.21%				|
+| 160 filters (one crop)		|	8.89%				|
+| 96 filters (paper, nine crop) |   7.37%               |
+| 128 filters (paper, nine crop)| 	7.24%				|
+| 160 filters (paper, nine crop)|	7.09%				|
+
+### CIFAR100
+The model reported by the paper is trained without data augmentation. Our model adopt the same hyper-parameters from the model for CIFAR10.
+
+| model                      	| Error Rate            | 
+|---------------------------	|----------------------	|
+| 96 filters (one crop)			|   39.58%              |
+| 128 filters (one crop)		|	36.26%				|
+| 160 filters (one crop)		|	34.75%				|
+| 96 filters (paper, nine crop) |   34.18%              |
+| 128 filters (paper, nine crop)|	32.59%				|
+| 160 filters (paper, nine crop)|	31.75%				|	
