@@ -91,7 +91,7 @@ if __name__ == "__main__":
         optimizer='adam', loss='categorical_crossentropy', metrics=['acc'])
 
     history = train_model.fit_generator(
-        train_generator, epochs=64, 
+        train_generator, epochs=128, 
         # validation_data=val_generator, max_queue_size=256, workers=2, 
         callbacks=callbacks_list)
 

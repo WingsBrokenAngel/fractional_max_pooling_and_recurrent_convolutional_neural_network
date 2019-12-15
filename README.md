@@ -80,34 +80,36 @@ Local response normalization is replaced by batch normalization. Only last hidde
 
 ### MNIST
 
-| model                      	| Error Rate            | 
-|---------------------------	|----------------------	|
-| filters 96 (one crop)			|   0.93%               |	
-| filters 128 (one crop)        |   0.87%               |	
-| filters 160 (one crop)		|	0.86%				|
-| filters 32 (paper)			| 	0.42%				|
-| filters 64 (paper)			| 	0.32%				|
-| filters 96 (paper)			|	0.31%				|
+| model                      	| Error Rate    	| 
+|---------------------------	|----------------	|
+| filters 32 (one crop)			|	1.07%			|
+| filters 64 (one crop)			|	1.02%			|
+| filters 96 (one crop)			|   0.93%           |	
+| filters 128 (one crop)        |   0.87%           |	
+| filters 160 (one crop)		|	0.86%			|
+| filters 32 (paper)			| 	0.42%			|
+| filters 64 (paper)			| 	0.32%			|
+| filters 96 (paper)			|	0.31%			|
 
 ### CIFAR10
 
-| model                      	| Error Rate            | 
-|---------------------------	|----------------------	|
-| 96 filters (one crop)			|   10.53%              |
-| 128 filters (one crop)		|	9.21%				|
-| 160 filters (one crop)		|	8.89%				|
-| 96 filters (paper, nine crop) |   7.37%               |
-| 128 filters (paper, nine crop)| 	7.24%				|
-| 160 filters (paper, nine crop)|	7.09%				|
+| model                      	| Error Rate        | 
+|---------------------------	|-----------------	|
+| 96 filters (one crop)			|   10.53%          |
+| 128 filters (one crop)		|	9.21%			|
+| 160 filters (one crop)		|	8.89%			|
+| 96 filters (paper, nine crop) |   7.37%           |
+| 128 filters (paper, nine crop)| 	7.24%			|
+| 160 filters (paper, nine crop)|	7.09%			|
 
 ### CIFAR100
 The model reported by the paper is trained without data augmentation. Our model adopt the same hyper-parameters from the model for CIFAR10.
 
-| model                      	| Error Rate            | 
-|---------------------------	|----------------------	|
-| 96 filters (one crop)			|   39.58%              |
-| 128 filters (one crop)		|	36.26%				|
-| 160 filters (one crop)		|	34.75%				|
-| 96 filters (paper, nine crop) |   34.18%              |
-| 128 filters (paper, nine crop)|	32.59%				|
-| 160 filters (paper, nine crop)|	31.75%				|	
+| model                      	| Error Rate        | 
+|---------------------------	|-----------------	|
+| 96 filters (one crop)			|   39.58%          |
+| 128 filters (one crop)		|	36.26%			|
+| 160 filters (one crop)		|	34.75%			|
+| 96 filters (paper, nine crop) |   34.18%          |
+| 128 filters (paper, nine crop)|	32.59%			|
+| 160 filters (paper, nine crop)|	31.75%			|	
