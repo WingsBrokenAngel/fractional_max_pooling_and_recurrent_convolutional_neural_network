@@ -15,7 +15,7 @@ from tensorflow.keras.activations import relu
 import tensorflow.keras.backend as K
 
 KERNEL_SIZE = 2
-RATIO = [1.0, 2**(1/3), 2**(1/3), 1.0]
+RATIO = [1.0, 2**(1/2), 2**(1/2), 1.0]
 PSEUDO_RANDOM = True
 OVERLAPPING = True
 

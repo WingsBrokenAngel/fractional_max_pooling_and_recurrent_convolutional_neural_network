@@ -12,6 +12,7 @@ import tensorflow.keras.backend as K
 from RCNN import RCNN
 from FMPnet import FMP
 import os
+import numpy as np
 
 
 def schedule_func(epochs, lr):
@@ -37,6 +38,8 @@ if __name__ == "__main__":
     
     data = mnist.load_data()
     (train_data, train_labels), (test_data, test_labels) = data
+    train_data = np.expand_dims(train_data, axis=-1)
+    test_data = np.expand_dims(test_data, axis=-1)
     train_labels = to_categorical(train_labels)
     test_labels = to_categorical(test_labels)
 
@@ -57,12 +60,12 @@ if __name__ == "__main__":
     try:
         if flags.name == "rcnn":
             model = RCNN(flags.filters, flags.wdecay, flags.drop)
-            input_tensor = tf.keras.Input(shape=(28, 28, 3))
+            input_tensor = tf.keras.Input(shape=(28, 28, 1))
             output_tensor_train = model(input_tensor, True, 3)
             output_tensor_test = model(input_tensor, False, 3)
         elif flags.name == "fmp":
             model = FMP(flags.filters, flags.wdecay, flags.drop)
-            input_tensor = tf.keras.Input(shape=(28, 28, 3))
+            input_tensor = tf.keras.Input(shape=(28, 28, 1))
             output_tensor_train = model(input_tensor, True)
             output_tensor_test = model(input_tensor, False)
         else:
@@ -88,7 +91,7 @@ if __name__ == "__main__":
         optimizer='adam', loss='categorical_crossentropy', metrics=['acc'])
 
     history = train_model.fit_generator(
-        train_generator, epochs=128, 
+        train_generator, epochs=64, 
         # validation_data=val_generator, max_queue_size=256, workers=2, 
         callbacks=callbacks_list)
 

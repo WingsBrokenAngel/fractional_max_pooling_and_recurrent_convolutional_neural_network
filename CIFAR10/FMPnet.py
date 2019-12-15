@@ -16,7 +16,7 @@ import tensorflow.keras.backend as K
 
 KERNEL_SIZE = 2
 NUM_OUTPUT = 10
-RATIO = [1.0, 2**(1/3), 2**(1/3), 1.0]
+RATIO = [1.0, 2**(1/2), 2**(1/2), 1.0]
 PSEUDO_RANDOM = True
 OVERLAPPING = True
 
@@ -55,6 +55,7 @@ class FMP:
         self.layer6 = layers.Conv2D(FILTERS*6, **config1)
 
         self.layer7 = layers.Conv2D(FILTERS*7, **config1)
+
 
         self.dp = layers.Dropout(self.drop_rate)
         self.flatten = layers.Flatten()

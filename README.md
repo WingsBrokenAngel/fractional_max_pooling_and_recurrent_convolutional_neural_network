@@ -9,9 +9,11 @@
 ## Fractional Max Pooling
 This repository is implemented based on [Fractional Max-Pooling](https://arxiv.org/abs/1412.6071) which is written by Benjamin Graham in 2014. It is the top-1 model in [CIFAR-10 result list](http://rodrigob.github.io/are_we_there_yet/build/classification_datasets_results.html#43494641522d3130).
 
-
-### Model Description
 ![The effect of fractional max-pooling](./imgs/fractional_max_pooling.png)
+
+#### Usage
+`python train_dev_model.py [--name model_name] [--gpu gpu_idx] [--lr initial_learning_rate] [--drop drop_rate] [--filters filters_number] [--wdecay weight_decay]`
+
 #### MNIST
 The input images are resized to (38, 38) which is slightly different with the size in that paper. The model is trained without dropout and data argumentation. The overall structure of the model can be expressed as follows: 
 ```
@@ -26,11 +28,7 @@ Here is the comparison table on error rates.
 | 1 test (paper)				|	0.44%					|	0.50%				|
 | 12 test (paper)				|   0.34%					|	0.32%				|
 
-##### Usage
-- train: `python train_dev_test_FMP.py WEIGHT_DECAY_RATE GPU_DEVICE_NUM MODEL_NAME`
-	- e.g. `python train_dev_test_FMP.py 0.8871 model.ckpt`
-- test: `python testFMP.py ./PATH/TO/MODEL GPU_DEVICE_NUM`
-	- e.g. `python testFMP.py ./model/model.ckpt 0`
+
 
 ##### Model Checkpoint
 - pseudorandom overlapping
@@ -75,12 +73,21 @@ The number of layers is reduced since it is too time consuming to train the netw
 The code of this part is implemented according to [Recurrent Convolutional Neural Network for Object Recognition](https://ieeexplore.ieee.org/document/7298958/). 
 Local response normalization is replaced by batch normalization. Only last hidden layer is followed by a dropout layer. Adam optimizer is used to optimize the model. Learning rate decays exponentially. Image shift and horizental flip are utilized for data augmentation.
 
+![Recurrent Convolutional Neural Network](./imgs/recurrent_convolutional_neural_network.jpg)
+
+### Usage
+`python train_dev_model.py [--name model_name] [--gpu gpu_idx] [--lr initial_learning_rate] [--drop drop_rate] [--filters filters_number] [--wdecay weight_decay]`
+
 ### MNIST
 
 | model                      	| Error Rate            | 
 |---------------------------	|----------------------	|
-| This code (one crop)			|   -----               |	
-| In paper (nine crop)          |   -----               |	
+| filters 96 (one crop)			|   0.93%               |	
+| filters 128 (one crop)        |   0.87%               |	
+| filters 160 (one crop)		|	0.86%				|
+| filters 32 (paper)			| 	0.42%				|
+| filters 64 (paper)			| 	0.32%				|
+| filters 96 (paper)			|	0.31%				|
 
 ### CIFAR10
 
