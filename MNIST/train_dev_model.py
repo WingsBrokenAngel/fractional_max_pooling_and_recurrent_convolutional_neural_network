@@ -47,12 +47,12 @@ if __name__ == "__main__":
         rotation_range=20, width_shift_range=6, height_shift_range=6, 
         horizontal_flip=True, rescale=1./255)
     train_generator = train_datagen.flow(
-        train_data, train_labels, batch_size=256)
-    '''
+        train_data[:-6000], train_labels[:-6000], batch_size=256)
+
     val_datagen = ImageDataGenerator(rescale=1./255)
-    val_generator = val_datagen.flow(train_data[-5000:], 
-        train_labels[-5000:], batch_size=256, shuffle=False)
-    '''
+    val_generator = val_datagen.flow(train_data[-6000:], 
+        train_labels[-6000:], batch_size=256, shuffle=False)
+
     test_datagen = ImageDataGenerator(rescale=1./255)
     test_generator = test_datagen.flow(
         test_data, test_labels, batch_size=256, shuffle=False)
@@ -92,7 +92,7 @@ if __name__ == "__main__":
 
     history = train_model.fit_generator(
         train_generator, epochs=128, 
-        # validation_data=val_generator, max_queue_size=256, workers=2, 
+        validation_data=val_generator, max_queue_size=256, workers=2, 
         callbacks=callbacks_list)
 
     test_model.load_weights('./model/%s-%d-%g-%g-%g-best.h5'%(
