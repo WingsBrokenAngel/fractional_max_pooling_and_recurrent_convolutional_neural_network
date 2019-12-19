@@ -20,9 +20,9 @@ Here is the comparison table on error rates.
 
 | Model						 	| Results (1 test/12 tests)	| 
 |---------------------------	|----------------------		|	
-| k = 32					   	|   1.19%/0.91%             |	
-| k = 64        		        |   1.08%/0.86%             |	
-| k = 96 						|	0.99%/0.80%				|		
+| k = 32					   	|   1.04%/0.79%             |	
+| k = 64        		        |   0.99%/0.83%             |	
+| k = 96 						|	0.91%/0.73%				|		
 
 #### CIFAR10
 The model structure can be written as follows: `(knC2 - FMP 2^{1/3})_7 - C1 - output`, where n denotes the nth layer and k denotes the filter number. 
@@ -32,8 +32,8 @@ Fraction max pooling layer is too slow on Tensorflow and it is not implemented o
 | Model						 	| Results (1 test/12 tests)	|
 |---------------------------	|----------------------		|
 | k = 64						|	13.03%/10.97%			|
-| k = 96					   	|   11.58%/9.46%            |
-| k = 128		                |   ---                 	|
+| k = 96					   	|   11.58%/9.55%            |
+| k = 128		                |   11.08%/9.61%            |
 
 #### CIFAR100
 The overall structure of the model can be represented as follows:
@@ -44,7 +44,7 @@ The number of layers is reduced since it is too time consuming to train the netw
 
 | Model						 	| Results (1 test/12 tests)	| 
 |---------------------------	|----------------------		|
-| k = 64				   		|   ---/---                 |	
+| k = 64				   		|   39.71%/37.15%           |	
 | k = 96			            |   35.97%/32.92%           |	
 | k = 128						|	34.72%/32.12%			|
 | k = 160						| 	34.11%/31.73%			|
