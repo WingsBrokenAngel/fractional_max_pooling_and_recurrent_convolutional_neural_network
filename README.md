@@ -32,7 +32,7 @@ Fraction max pooling layer is too slow on Tensorflow and it is not implemented o
 | Model						 	| Results (1 test/12 tests)	|
 |---------------------------	|----------------------		|
 | k = 64						|	13.03%/10.97%			|
-| k = 96					   	|   11.58%/9.55%            |
+| k = 96					   	|   12.10%/10.11%            |
 | k = 128		                |   11.08%/9.61%            |
 
 #### CIFAR100
