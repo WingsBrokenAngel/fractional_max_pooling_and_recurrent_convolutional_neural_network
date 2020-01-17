@@ -1,5 +1,10 @@
 # Fractional Max Pooling and Recurrent Convolutional Neural Network
-
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com) 
+![DeepLearning](https://img.shields.io/badge/DeepLearning-ImageClassification-success)
+![Github Watchers](https://img.shields.io/github/watchers/WingsBrokenAngel/fractional_max_pooling_and_recurrent_convolutional_neural_network?color=brightgreen)
+![GitHub stars](https://img.shields.io/github/stars/WingsBrokenAngel/fractional_max_pooling_and_recurrent_convolutional_neural_network?color=brightgreen)
+![GitHub forks](https://img.shields.io/github/forks/WingsBrokenAngel/fractional_max_pooling_and_recurrent_convolutional_neural_network?color=brightgreen&label=Fork)
+![License](https://img.shields.io/github/license/WingsBrokenAngel/fractional_max_pooling_and_recurrent_convolutional_neural_network?color=brightgreen&style=flat)
 ## Requirements
 - Python3.6
 - TensorFlow-gpu 1.13
